@@ -1,11 +1,14 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveFoldable #-}
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DeriveTraversable #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DeriveAnyClass             #-}
+{-# LANGUAGE DeriveDataTypeable         #-}
+{-# LANGUAGE DeriveFoldable             #-}
+{-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DeriveTraversable          #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies               #-}
+
 
 module Data.ProtocolBuffers.Types
   ( Field(..)
@@ -26,37 +29,38 @@ module Data.ProtocolBuffers.Types
   , PackedField(..)
   ) where
 
-import Control.DeepSeq (NFData)
-import Data.Bits
-import Data.Foldable as Fold
-import Data.Monoid
-import Data.Traversable
-import Data.Typeable
+import           Control.DeepSeq  (NFData)
+import           Data.Bits
+import           Data.Foldable    as Fold
+import           Data.Monoid
+import           Data.Traversable
+import           Data.Typeable
 
-import GHC.TypeLits
+import           GHC.Generics
+import           GHC.TypeLits
 
 -- |
 -- 'Value' selects the normal/typical way for encoding scalar (primitive) values.
 newtype Value a       = Value       {runValue       :: a}
-  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable)
+  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- 'RequiredField' is a newtype wrapped used to break overlapping instances
 -- for encoding and decoding values
 newtype RequiredField a    = Required    {runRequired    :: a}
-  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable)
+  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- 'OptionalField' is a newtype wrapped used to break overlapping instances
 -- for encoding and decoding values
 newtype OptionalField a    = Optional    {runOptional    :: a}
-  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable)
+  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- 'RepeatedField' is a newtype wrapped used to break overlapping instances
 -- for encoding and decoding values
 newtype RepeatedField a    = Repeated    {runRepeated    :: a}
-  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable)
+  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- Fields are merely a way to hold a field tag along with its type, this shouldn't normally be referenced directly.
@@ -64,7 +68,7 @@ newtype RepeatedField a    = Repeated    {runRepeated    :: a}
 -- This provides better error messages than older versions which used 'Data.Tagged.Tagged'
 --
 newtype Field (n :: Nat) a = Field {runField :: a}
-  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable)
+  deriving (Bounded, Eq, Enum, Foldable, Functor, Monoid, Ord, NFData, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- To provide consistent instances for serialization a 'Traversable' 'Functor' is needed to
@@ -72,7 +76,7 @@ newtype Field (n :: Nat) a = Field {runField :: a}
 --
 -- This is the 'Data.Functor.Identity.Identity' 'Functor' with a 'Show' instance.
 newtype Always a = Always {runAlways :: a}
-  deriving (Bounded, Eq, Enum, Foldable, Functor, Ord, NFData, Show, Traversable, Typeable)
+  deriving (Bounded, Eq, Enum, Foldable, Functor, Ord, NFData, Show, Traversable, Typeable, Semigroup, Generic)
 
 instance Monoid (Always a) where
   mempty = error "Always is not a Monoid"
@@ -175,24 +179,24 @@ type Packed n a = Field n (PackedField (PackedList a))
 -- |
 -- 'Enumeration' fields use 'Prelude.fromEnum' and 'Prelude.toEnum' when encoding and decoding messages.
 newtype Enumeration a = Enumeration {runEnumeration :: a}
-  deriving (Bounded, Eq, Enum, Foldable, Functor, Ord, Monoid, NFData, Show, Traversable, Typeable)
+  deriving (Bounded, Eq, Enum, Foldable, Functor, Ord, Monoid, NFData, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- A 'Traversable' 'Functor' used to select packed sequence encoding/decoding.
 newtype PackedField a = PackedField {runPackedField :: a}
-  deriving (Eq, Foldable, Functor, Monoid, NFData, Ord, Show, Traversable, Typeable)
+  deriving (Eq, Foldable, Functor, Monoid, NFData, Ord, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- A list that is stored in a packed format.
 newtype PackedList a = PackedList {unPackedList :: [a]}
-  deriving (Eq, Foldable, Functor, Monoid, NFData, Ord, Show, Traversable, Typeable)
+  deriving (Eq, Foldable, Functor, Monoid, NFData, Ord, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- Signed integers are stored in a zz-encoded form.
 newtype Signed a = Signed a
-  deriving (Bits, Bounded, Enum, Eq, Floating, Foldable, Fractional, Functor, Integral, Monoid, NFData, Num, Ord, Real, RealFloat, RealFrac, Show, Traversable, Typeable)
+  deriving (Bits, Bounded, Enum, Eq, Floating, Foldable, Fractional, Functor, Integral, Monoid, NFData, Num, Ord, Real, RealFloat, RealFrac, Show, Traversable, Typeable, Semigroup, Generic)
 
 -- |
 -- Fixed integers are stored in little-endian form without additional encoding.
 newtype Fixed a = Fixed a
-  deriving (Bits, Bounded, Enum, Eq, Floating, Foldable, Fractional, Functor, Integral, Monoid, NFData, Num, Ord, Real, RealFloat, RealFrac, Show, Traversable, Typeable)
+  deriving (Bits, Bounded, Enum, Eq, Floating, Foldable, Fractional, Functor, Integral, Monoid, NFData, Num, Ord, Real, RealFloat, RealFrac, Show, Traversable, Typeable, Semigroup, Generic)

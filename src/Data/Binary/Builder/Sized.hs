@@ -1,12 +1,17 @@
+{-# LANGUAGE DeriveAnyClass #-}
+
+
 module Data.Binary.Builder.Sized where
 
+import qualified Data.ByteString         as BS
 import qualified Data.ByteString.Builder as B
-import Data.Monoid (mempty, mappend, Monoid)
-import qualified Data.ByteString.Lazy as LBS
-import qualified Data.ByteString as BS
-import qualified Data.Word as W
+import qualified Data.ByteString.Lazy    as LBS
+import           Data.Monoid             (Monoid, mappend, mempty)
+import qualified Data.Word               as W
 
 data Builder = Builder {-# UNPACK #-} !Int B.Builder
+  deriving Semigroup
+
 
 instance Monoid Builder where
   mempty = Builder 0 mempty

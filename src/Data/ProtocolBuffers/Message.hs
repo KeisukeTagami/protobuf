@@ -1,34 +1,34 @@
-{-# LANGUAGE DeriveFoldable #-}
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DeriveTraversable #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveFoldable             #-}
+{-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE DeriveTraversable          #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE TypeOperators              #-}
+{-# LANGUAGE TypeSynonymInstances       #-}
+{-# LANGUAGE UndecidableInstances       #-}
 
 module Data.ProtocolBuffers.Message
   ( Message(..)
   , GMessageMonoid
   ) where
 
-import Control.Applicative
-import Control.DeepSeq (NFData(..))
-import Data.Foldable
-import Data.Monoid
-import Data.Binary.Get
-import Data.Traversable
+import           Control.Applicative
+import           Control.DeepSeq             (NFData (..))
+import           Data.Binary.Get
+import           Data.Foldable
+import           Data.Monoid
+import           Data.Traversable
 
-import GHC.Generics
-import GHC.TypeLits
+import           GHC.Generics
+import           GHC.TypeLits
 
-import Data.ProtocolBuffers.Decode
-import Data.ProtocolBuffers.Encode
-import Data.ProtocolBuffers.Types
-import Data.ProtocolBuffers.Wire
-import qualified Data.ByteString.Lazy as LBS
+import qualified Data.ByteString.Lazy        as LBS
+import           Data.ProtocolBuffers.Decode
+import           Data.ProtocolBuffers.Encode
+import           Data.ProtocolBuffers.Types
+import           Data.ProtocolBuffers.Wire
 
 -- |
 -- The way to embed a message within another message.
@@ -99,6 +99,9 @@ newtype Message m = Message {runMessage :: m}
 instance (Generic m, GMessageMonoid (Rep m)) => Monoid (Message m) where
   mempty = Message . to $ gmempty
   Message x `mappend` Message y = Message . to $ gmappend (from x) (from y)
+
+instance Semigroup (Message m) where
+
 
 instance (Decode a, Monoid (Message a), KnownNat n) => GDecode (K1 i (Field n (RequiredField (Always (Message a))))) where
   gdecode = fieldDecode (Required . Always)
